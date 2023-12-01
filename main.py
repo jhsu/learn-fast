@@ -23,7 +23,7 @@ def main():
     print(plan)
 
     try:
-        os.makdirs(f"./lessons/{topic}")
+        os.makedirs(f"./lessons/{topic}")
     except FileExistsError:
         print(f"Directory already exists, remove the folder './lessons/{topic}' and try again.")
         raise
