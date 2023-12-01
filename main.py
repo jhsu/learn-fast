@@ -16,6 +16,8 @@ voice = os.environ.get("ELEVENLABS_VOICE_ID")
 
 assistant_id = os.environ.get("OPENAI_ASSISTANT_ID")
 
+BASE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), './lessons')
+
 def main():
     topic = input("What topic do you want to learn about?")
     planner = LessonPlanner(client=oa, topic=topic, assistant=assistant_id)
@@ -23,7 +25,7 @@ def main():
     print(plan)
 
     try:
-        os.makedirs(f"./lessons/{topic}")
+        os.makedirs(os.path.join(BASE_PATH, topic))
     except FileExistsError:
         print(f"Directory already exists, remove the folder './lessons/{topic}' and try again.")
         raise
@@ -44,7 +46,8 @@ def main():
         for chunk in audio_stream:
             buffer.append(chunk)
 
-        with open(f"./{topic}/lesson{planner.current_lesson}.wav", "wb") as f:
+        lesson_path = os.path.join(BASE_PATH, topic, f"lesson{planner.current_lesson}.wav")
+        with open(lesson_path, "wb") as f:
             for chunk in buffer:
                 # stream(chunk)
                 f.write(chunk)
