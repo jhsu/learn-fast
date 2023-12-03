@@ -3,6 +3,7 @@ from openai import OpenAI
 from openai.types.beta.threads.run import Run
 from openai.types.beta.threads.thread_message import Content
 
+from typing import Optional
 
 class LessonPlanner():
     """
@@ -14,11 +15,13 @@ class LessonPlanner():
     thread_id: str
     current_lesson: int
 
-    def __init__(self, topic: str, client: OpenAI, assistant: str):
+    def __init__(self, topic: str, client: OpenAI, assistant: str, thread_id: Optional[str]):
         self.topic = topic
         self.brain = client
         self.planner = self._get_or_create_assistant(assistant)
         self.current_lesson = 0
+        if thread_id:
+            self.thread_id = thread_id
 
     def prepare_lesson_plan(self):
         """
@@ -37,8 +40,9 @@ class LessonPlanner():
         )
         run = self._wait_for_run(run)
         self.thread_id = run.thread_id
-        messages = self.brain.beta.threads.messages.list(self.thread_id)
-        last_message = messages.data[0]
+        messages = self.get_thread_messages()
+
+        last_message = messages[0]
         lesson = last_message.content[0]
         return self._get_message_text(lesson)
     
@@ -53,7 +57,7 @@ class LessonPlanner():
         self.brain.beta.threads.messages.create(self.thread_id,
             role="user", content= f"Write lesson {self.current_lesson} as a transcript with just body text.")
         self._run_thread()
-        messages = self._get_thread_messages()
+        messages = self.get_thread_messages()
         content = messages[0].content[0]
         return self._get_message_text(content)
 
@@ -75,7 +79,7 @@ class LessonPlanner():
         return run
 
 
-    def _get_thread_messages(self):
+    def get_thread_messages(self):
         result = self.brain.beta.threads.messages.list(self.thread_id)
         return result.data
     

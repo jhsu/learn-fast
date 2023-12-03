@@ -2,3 +2,4 @@
 *.wav
 .env
 __pycache__
+lessons/**/*
